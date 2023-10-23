@@ -17,21 +17,120 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+import GObject from "gi://GObject";
 import GLib from "gi://GLib";
-import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
+import Gio from "gi://Gio";
+import St from "gi://St";
+import Clutter from "gi://Clutter";
+
+import {
+  Extension,
+  ExtensionMetadata,
+} from "resource:///org/gnome/shell/extensions/extension.js";
+import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
+import * as Main from "resource:///org/gnome/shell/ui/main.js";
+import { PopupMenuItem } from "./@types/gnome-shell/ui/popupMenu";
+
+// Shouldn't this be upstreamed to Gjs?
+Gio._promisify(Gio.Subprocess.prototype, "communicate_utf8_async");
+
+interface HomeIndicatorConstructorProperties {
+  readonly name: string;
+}
+
+const HomeIndicator = GObject.registerClass(
+  class extends PanelMenu.Button {
+    private readonly label: St.Label;
+
+    constructor({ name }: HomeIndicatorConstructorProperties) {
+      super(0, name, false);
+      this.label = new St.Label();
+      this.label.clutter_text.y_align = Clutter.ActorAlign.CENTER;
+      this.add_child(this.label);
+      this.set_label_actor(this.label);
+      this.showRoutes([]);
+    }
+
+    showRoutes(routes: readonly string[]): void {
+      this.menu.removeAll();
+      if (0 < routes.length && routes[0]) {
+        this.label.set_text(routes[0]);
+        routes.slice(1).forEach((route) => {
+          this.menu.addMenuItem(new PopupMenuItem(route));
+        });
+      } else {
+        this.label.set_text("🚆 n.a.");
+        this.menu.addMenuItem(new PopupMenuItem("no more routes"));
+      }
+    }
+
+    showError(error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      this.label.set_text(`Error: ${error}`);
+      this.menu.removeAll();
+    }
+  },
+);
+
+type HomeIndicator = InstanceType<typeof HomeIndicator>;
+
+const getRoutes = async (): Promise<readonly string[]> => {
+  const flags =
+    Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE;
+  const proc = Gio.Subprocess.new(["home"], flags);
+  const [stdout, stderr] = await proc.communicate_utf8_async(null, null);
+  if (proc.get_successful()) {
+    return (stdout ?? "").trim().split("\n");
+  } else {
+    throw new Error(`home failed: ${stderr}`);
+  }
+};
+
+const updateRoutesOnIndicator = async (
+  indicator: HomeIndicator,
+): Promise<void> => {
+  try {
+    indicator.showRoutes(await getRoutes());
+  } catch (error) {
+    console.error("Failed to update routes", error);
+    indicator.showError(error);
+  }
+};
+
+class EnabledExtension {
+  private readonly indicator: HomeIndicator;
+  private readonly sourceIdOfTimer: number;
+
+  constructor(metadata: ExtensionMetadata) {
+    this.indicator = new HomeIndicator({ name: `${metadata.uuid} indicator` });
+    Main.panel.addToStatusArea(metadata.uuid, this.indicator);
+    this.sourceIdOfTimer = GLib.timeout_add_seconds(
+      GLib.PRIORITY_DEFAULT,
+      60,
+      () => {
+        void updateRoutesOnIndicator(this.indicator);
+        return true;
+      },
+    );
+  }
+
+  destroy(): void {
+    GLib.source_remove(this.sourceIdOfTimer);
+    this.indicator.destroy();
+  }
+}
 
 export default class HelloWorldExtension extends Extension {
+  private enabledExtension?: EnabledExtension | null;
+
   override enable(): void {
-    const settings = this.getSettings();
-    // eslint-disable-next-line functional/no-conditional-statements
-    if (settings.get_boolean("say-hello")) {
-      const user = GLib.get_user_name();
-      console.log(`Hello ${user} from ${this.metadata.name}`);
+    if (!this.enabledExtension) {
+      this.enabledExtension = new EnabledExtension(this.metadata);
     }
   }
 
   override disable(): void {
-    const user = GLib.get_user_name();
-    console.log(`Goodbye ${user} from ${this.metadata.name}`);
+    this.enabledExtension?.destroy();
+    this.enabledExtension = null;
   }
 }
