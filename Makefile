@@ -2,7 +2,7 @@ PREFIX = /usr/local
 DESTDIR =
 HOME-DESTDIR = $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
 
-UUID = typescript-template@swsnr.de
+UUID = home@swsnr.de
 
 DIST-EXTRA-SRC = LICENSE-GPL2 LICENSE-MPL2
 BLUEPRINTS = $(addprefix ui/,about.blp)
@@ -61,15 +61,10 @@ uninstall-home:
 install-system: dist
 	install -d \
 		$(DESTDIR)/$(PREFIX)/share/gnome-shell/extensions/$(UUID) \
-		$(DESTDIR)/$(PREFIX)/share/glib-2.0/schemas
 	bsdtar -xf dist/$(UUID).shell-extension.zip \
 		-C $(DESTDIR)/$(PREFIX)/share/gnome-shell/extensions/$(UUID) --no-same-owner
-	mv $(DESTDIR)/$(PREFIX)/share/gnome-shell/extensions/$(UUID)/schemas/*.gschema.xml \
-		$(DESTDIR)/$(PREFIX)/share/glib-2.0/schemas
-	rm -rf $(DESTDIR)/$(PREFIX)/share/gnome-shell/extensions/$(UUID)/schemas
 
 .PHONY: uninstall-system
 uninstall-system:
 	rm -rf \
 		$(DESTDIR)/$(PREFIX)/share/gnome-shell/extensions/$(UUID) \
-		$(DESTDIR)/$(PREFIX)/share/glib-2.0/schemas/org.gnome.shell.extensions.typescript-template.gschema.xml

@@ -1,8 +1,7 @@
 {
-  "name": "gnome-shell-extension-typescript-template",
-  "uuid": "typescript-template@swsnr.de",
-  "description": "Typescript template for GNOME shell extensions",
-  "url": "https://github.com/swsnr/gnome-shell-extension-typescript-template",
-  "shell-version": ["45"],
-  "settings-schema": "org.gnome.shell.extensions.typescript-template"
+  "name": "home",
+  "uuid": "home@swsnr.de",
+  "description": "Commute homewards",
+  "url": "https://github.com/swsnr/gnome-shell-extension-home",
+  "shell-version": ["45"]
 }
