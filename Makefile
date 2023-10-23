@@ -5,11 +5,6 @@ HOME-DESTDIR = $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
 UUID = home@swsnr.de
 
 DIST-EXTRA-SRC = LICENSE-GPL2 LICENSE-MPL2
-BLUEPRINTS = $(addprefix ui/,about.blp)
-UIDEFS = $(addsuffix .ui,$(basename $(BLUEPRINTS)))
-
-$(UIDEFS): %.ui: %.blp
-	blueprint-compiler compile --output $@ $<
 
 .PHONY: generate
 generate:
@@ -32,7 +27,7 @@ fix: format
 	npm run lint -- --fix
 
 .PHONY: compile
-compile: $(UIDEFS)
+compile:
 	npm run compile
 
 .PHONY: dist
