@@ -39,7 +39,7 @@ interface HomeIndicatorConstructorProperties {
 }
 
 const HomeIndicator = GObject.registerClass(
-  class extends PanelMenu.Button {
+  class HomeIndicator extends PanelMenu.Button {
     private readonly label: St.Label;
 
     constructor({ name }: HomeIndicatorConstructorProperties) {
