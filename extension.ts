@@ -98,8 +98,10 @@ const updateRoutesOnIndicator = async (
 };
 
 class EnabledExtension {
-  private readonly indicator: HomeIndicator;
   private readonly sourceIdOfTimer: number;
+  // Not read-only because we null the indicator after it's destroyed to prevent
+  // use after destroy.
+  private indicator: HomeIndicator | null;
 
   constructor(metadata: ExtensionMetadata) {
     this.indicator = new HomeIndicator({ name: `${metadata.uuid} indicator` });
@@ -108,15 +110,21 @@ class EnabledExtension {
       GLib.PRIORITY_DEFAULT,
       60,
       () => {
-        void updateRoutesOnIndicator(this.indicator);
-        return true;
+        if (this.indicator !== null) {
+          void updateRoutesOnIndicator(this.indicator);
+          return true;
+        } else {
+          // If the indicator is gone, there's no point in continuing the timer.
+          return false;
+        }
       },
     );
   }
 
   destroy(): void {
     GLib.source_remove(this.sourceIdOfTimer);
-    this.indicator.destroy();
+    this.indicator?.destroy();
+    this.indicator = null;
   }
 }
 
