@@ -119,6 +119,9 @@ class EnabledExtension {
         }
       },
     );
+    console.info("Updating initial routes")
+    // Update routes immediately after the extension is enabled.
+    void updateRoutesOnIndicator(this.indicator);
   }
 
   destroy(): void {
