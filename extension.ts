@@ -34,6 +34,23 @@ import { PopupMenuItem } from "resource:///org/gnome/shell/ui/popupMenu.js";
 // Shouldn't this be upstreamed to Gjs?
 Gio._promisify(Gio.Subprocess.prototype, "communicate_utf8_async");
 
+/**
+ * Shortcut for `GLib.markup_escape_text`.
+ */
+function e(s: string): string;
+function e(s: null): null;
+function e(s: string | null): string | null;
+function e(s: string | null): string | null {
+  return GLib.markup_escape_text(s, -1);
+}
+
+const routeToMarkup = (route: string): string =>
+  e(route)
+    // A poor man's ASCII parser
+    .replaceAll("&#x1b;[31m", '<span color="#a51d2d">')
+    .replaceAll("&#x1b;[32m", '<span color="#26a269">')
+    .replaceAll("&#x1b;[0m", "</span>");
+
 interface HomeIndicatorConstructorProperties {
   readonly name: string;
 }
@@ -54,19 +71,21 @@ const HomeIndicator = GObject.registerClass(
     showRoutes(routes: readonly string[]): void {
       this.menu.removeAll();
       if (0 < routes.length && routes[0]) {
-        this.label.set_text(routes[0]);
+        this.label.clutter_text.set_markup(routeToMarkup(routes[0]));
         routes.slice(1).forEach((route) => {
-          this.menu.addMenuItem(new PopupMenuItem(route));
+          const item = new PopupMenuItem(null);
+          item.label.clutter_text.set_markup(routeToMarkup(route));
+          this.menu.addMenuItem(item);
         });
       } else {
-        this.label.set_text("🚆 n.a.");
-        this.menu.addMenuItem(new PopupMenuItem("no more routes"));
+        this.label.clutter_text.set_markup("🚆 <i>n.a.</i>");
+        this.menu.addMenuItem(new PopupMenuItem("<i>no more routes</i>"));
       }
     }
 
     showError(error: unknown) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      this.label.set_text(`Error: ${error}`);
+      this.label.set_text(`<span color="red">Error: ${e(`${error}`)}</span>`);
       this.menu.removeAll();
     }
   },

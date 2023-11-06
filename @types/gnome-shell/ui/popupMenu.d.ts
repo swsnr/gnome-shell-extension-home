@@ -17,10 +17,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+import St from "gi://St";
+
 export declare class PopupBaseMenuItem {}
 
 export declare class PopupMenuItem extends PopupBaseMenuItem {
-  constructor(text: string, params?: unknown);
+  readonly label: St.Label;
+
+  constructor(text: string | null, params?: unknown);
 }
 
 export declare class PopupMenuBase {
