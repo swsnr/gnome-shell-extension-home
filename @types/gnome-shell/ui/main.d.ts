@@ -26,7 +26,7 @@ export declare class Panel {
     role: string,
     indicator: PanelMenu.Button,
     position?: number,
-    box?: PanelBox
+    box?: PanelBox,
   );
 }
 

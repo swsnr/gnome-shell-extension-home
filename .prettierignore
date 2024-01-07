@@ -1,3 +1,10 @@
+# Yarn things
+/.pnp.*
+/.yarn/
+
+# Generated types
 /@types/gir-generated/*
+
+# Build outputs
 *.js
 !/.ts-for-girrc.js

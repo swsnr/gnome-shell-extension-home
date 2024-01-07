@@ -8,27 +8,27 @@ DIST-EXTRA-SRC = LICENSE-GPL2 LICENSE-MPL2
 
 .PHONY: generate
 generate:
-	npm run generate:gir-types
+	yarn generate:gir-types
 
 .PHONY: format
 format:
-	npm run format -- --write
+	yarn format --write
 
 .PHONY: lint
 lint:
-	npm run lint
+	yarn lint
 
 .PHONY: check
 check: lint
-	npm run format -- --check
+	yarn format --check
 
 .PHONY: fix
 fix: format
-	npm run lint -- --fix
+	yarn lint --fix
 
 .PHONY: compile
 compile:
-	npm run compile
+	yarn compile
 
 .PHONY: dist
 dist: compile

@@ -18,5 +18,5 @@ module.exports = {
   root: true,
   rules: {},
   // These are either generated or config files or no real typescript
-  ignorePatterns: ["*.js", "*.cjs", "*.d.ts"],
+  ignorePatterns: ["/.yarn/", "*.js", "*.cjs", "*.d.ts"],
 };
