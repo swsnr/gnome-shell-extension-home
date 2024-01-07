@@ -37,11 +37,13 @@ Gio._promisify(Gio.Subprocess.prototype, "communicate_utf8_async");
 /**
  * Shortcut for `GLib.markup_escape_text`.
  */
-function e(s: string): string;
-function e(s: null): null;
-function e(s: string | null): string | null;
-function e(s: string | null): string | null {
-  return GLib.markup_escape_text(s, -1);
+function e(s: string): string {
+  const escaped = GLib.markup_escape_text(s, -1);
+  if (escaped === null) {
+    console.error("Failed to escape string", s);
+    throw new Error("Failed to escape text");
+  }
+  return escaped;
 }
 
 const routeToMarkup = (route: string): string =>
@@ -73,7 +75,7 @@ const HomeIndicator = GObject.registerClass(
       if (0 < routes.length && routes[0]) {
         this.label.clutter_text.set_markup(routeToMarkup(routes[0]));
         routes.slice(1).forEach((route) => {
-          const item = new PopupMenuItem(null);
+          const item = new PopupMenuItem("");
           item.label.clutter_text.set_markup(routeToMarkup(route));
           this.menu.addMenuItem(item);
         });
